@@ -1,0 +1,5 @@
+cozmo
+Pillow
+matplotlib
+numpy
+opencv-python
