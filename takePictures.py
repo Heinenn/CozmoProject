@@ -27,7 +27,7 @@ def capture(robot: cozmo.robot.Robot):
    #  cv2.imwrite(str('test' + str(i) + '.png'), img)
    #   robot.drive_straight(distance_mm(50), speed_mmps(200)).wait_for_completed()
 
-   img = cv2.imread('image.jpg')
+   img = cv2.imread('test0.png')
 
    # Convert the img to grayscale
    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
