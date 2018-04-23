@@ -1,0 +1,25 @@
+Metadata-Version: 2.0
+Name: cozmoclad
+Version: 2.4.0
+Summary: Low-level protocol for the Anki Cozmo SDK.
+Home-page: https://developer.anki.com/cozmo/
+Author: Anki, Inc
+Author-email: cozmosdk@anki.com
+License: Apache License, Version 2.0
+Description-Content-Type: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3.5
+
+
+Cozmo, by Anki.
+
+Cozmo is a small robot with a big personality.
+
+This library provides a low-level protocol library used by the
+cozmo SDK package.
+
+
