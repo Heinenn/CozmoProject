@@ -139,7 +139,7 @@ class Thresh:
 
         rgb_img2 = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
 
-        invGamma = 1.0 / ((77 + 1) / 50)#self._tk_ga_scale.get()
+        invGamma = 1.0 / ((6 + 1) / 50)#self._tk_ga_scale.get()#77
         new = np.zeros(256)
         ori = np.zeros(256)
         for i in range(256):
@@ -150,7 +150,7 @@ class Thresh:
             low = np.array([0,0,0], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
         except:
             sys.exit('Window Closed - Exiting')
-        high = np.array([255,255,252], dtype="uint8")#[self._tk_hh_scale.get(), self._tk_sh_scale.get(), self._tk_vh_scale.get()]
+        high = np.array([0,0,0], dtype="uint8")#255,255,252
 
         rgb_img = cv2.LUT(raw_rgb, incr_ch_lut).astype(np.uint8)
         rgb_img2 = cv2.LUT(rgb_img2, incr_ch_lut).astype(np.uint8)
@@ -172,11 +172,11 @@ class Thresh:
 
         display_image_input = PIL.ImageTk.PhotoImage(image=pil_thresh)
         display_image_output = PIL.ImageTk.PhotoImage(image=rgb_img2)
-        #self._tk_label_input.imgtk = display_image_input
-        #self._tk_label_input.configure(image=display_image_input)
-        #self._tk_label_output.imgtk = display_image_output
-        #self._tk_label_output.configure(image=display_image_output)
-        #self._tk_root.update()
+        self._tk_label_input.imgtk = display_image_input
+        self._tk_label_input.configure(image=display_image_input)
+        self._tk_label_output.imgtk = display_image_output
+        self._tk_label_output.configure(image=display_image_output)
+        self._tk_root.update()
 
         log.info('start')
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -184,11 +184,11 @@ class Thresh:
         Images = []
         N_SLICES = 4
 
-        for q in range(N_SLICES):
-            Images.append(Image2.Image())
+        #for q in range(N_SLICES):
+        #    Images.append(Image2.Image())
 
-        log.info('before true')
-        while True:
+        #log.info('before true')
+        #while True:
 
             #array = np.array(rgb_img2, dtype='uint8')
 
@@ -196,14 +196,14 @@ class Thresh:
             #img = img[:, :, ::-1].copy()
 
             #img = cv2.imdecode(open_cv_image, 1)
-            direction = 0
+            #direction = 0
             #img = RemoveBackground(img, False)
-            if rgb_img_conv is not None:
-                t1 = time.clock()
-                SlicePart(rgb_img_conv, Images, N_SLICES)
-                for i in range(N_SLICES):
-                    direction += Images[i].dir
-                log.info(direction)
+            #if rgb_img_conv is not None:
+                #t1 = time.clock()
+                #SlicePart(rgb_img_conv, Images, N_SLICES)
+                #for i in range(N_SLICES):
+                    #direction += Images[i].dir
+                #log.info(direction)
 
     def create_LUT_8UC1(self, x, y):
         spl = UnivariateSpline(x, y)

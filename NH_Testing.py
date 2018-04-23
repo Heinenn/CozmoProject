@@ -83,8 +83,8 @@ class Main:
                         direction += Images[i].dir
                     log.info(direction)
 
-                    self._robot.turn_in_place(degrees(int(direction))).wait_for_completed()
-                    self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
+                    #self._robot.turn_in_place(degrees(int(direction))).wait_for_completed()
+                    #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
                 else:
                     break
 
