@@ -121,23 +121,23 @@ class Main:
                 #else:
                 #    speed = 40
                 #    turnspeed = 40
-                speed = 40
-                turnspeed = 40
+                speed = 50
+                turnspeed = 50
 
                 maxWindow = 312
-                windowPart = int(maxWindow/3)
+                #windowPart = int(maxWindow/3)
 
-                if cx >= int(windowPart*2):
+                if cx >= 190:
                     log.info('turn right')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
                     self._robot.drive_wheel_motors(speed, speed - turnspeed)
-                if cx < int(windowPart*2) and cx > windowPart:
+                if cx < 208 and cx > 104:
                     log.info('on track')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
                     self._robot.drive_wheel_motors(speed, speed)
-                if cx <= windowPart:
+                if cx <= 120:
                     log.info('turn left')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
