@@ -139,7 +139,7 @@ class Thresh:
 
         rgb_img2 = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
 
-        invGamma = 1.0 / ((6 + 1) / 50)#self._tk_ga_scale.get()#77
+        invGamma = 1.0 / ((self._tk_ga_scale.get() + 1) / 50)#self._tk_ga_scale.get()#77
         new = np.zeros(256)
         ori = np.zeros(256)
         for i in range(256):
@@ -147,10 +147,10 @@ class Thresh:
             ori[i] = i
         try:
             incr_ch_lut = self.create_LUT_8UC1(ori, new)
-            low = np.array([0,0,0], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
+            low = np.array([self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
         except:
             sys.exit('Window Closed - Exiting')
-        high = np.array([0,0,0], dtype="uint8")#255,255,252
+        high = np.array([self._tk_hh_scale.get(),self._tk_sh_scale.get(),self._tk_vh_scale.get()], dtype="uint8")#255,255,252
 
         rgb_img = cv2.LUT(raw_rgb, incr_ch_lut).astype(np.uint8)
         rgb_img2 = cv2.LUT(rgb_img2, incr_ch_lut).astype(np.uint8)
@@ -159,12 +159,11 @@ class Thresh:
 
         thresh_img = cv2.inRange(rgb_img2, low, high)
 
+
         raw_rgb_conv = cv2.cvtColor(np.array(raw_img), cv2.COLOR_BGR2RGB)
         rgb_img_conv = cv2.cvtColor(np.array(rgb_img), cv2.COLOR_BGR2RGB)
         rgb_img2_conv = cv2.cvtColor(np.array(rgb_img2), cv2.COLOR_BGR2RGB)
-        #cv2.imwrite('raw_img.png', raw_rgb_conv)
-        #cv2.imwrite('rgb_img.png', rgb_img_conv)
-        #cv2.imwrite('rgb_img2.png', rgb_img2_conv)
+        cv2.imwrite('thresh.png', thresh_img)
 
         pil_thresh = PIL.Image.fromarray(cv2.cvtColor(thresh_img, cv2.COLOR_GRAY2RGB))
         rgb_img = PIL.Image.fromarray(rgb_img)
@@ -224,22 +223,22 @@ class Thresh:
         self._tk_root = tk.Tk()
         self._tk_label_input = tk.Label(self._tk_root)
         self._tk_label_output = tk.Label(self._tk_root)
-        #self._tk_ga_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='ga')
-        #self._tk_hl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='hl')
-        #self._tk_sl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='sl')
-        #self._tk_vl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='vl')
-        #self._tk_hh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='hh')
-        #self._tk_sh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='sh')
-        #self._tk_vh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='vh')
+        self._tk_ga_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='ga')
+        self._tk_hl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='hl')
+        self._tk_sl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='sl')
+        self._tk_vl_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='vl')
+        self._tk_hh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='hh')
+        self._tk_sh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='sh')
+        self._tk_vh_scale = tk.Scale(self._tk_root, from_=0, to=255, orient=tk.HORIZONTAL, length=300, label='vh')
         self._tk_label_input.pack()
         self._tk_label_output.pack()
-        #self._tk_ga_scale.pack()
-        #self._tk_hl_scale.pack()
-        #self._tk_sl_scale.pack()
-        #self._tk_vl_scale.pack()
-        #self._tk_hh_scale.pack()
-        #self._tk_sh_scale.pack()
-        #self._tk_vh_scale.pack()
+        self._tk_ga_scale.pack()
+        self._tk_hl_scale.pack()
+        self._tk_sl_scale.pack()
+        self._tk_vl_scale.pack()
+        self._tk_hh_scale.pack()
+        self._tk_sh_scale.pack()
+        self._tk_vh_scale.pack()
 
         while True:
             await asyncio.sleep(0)
