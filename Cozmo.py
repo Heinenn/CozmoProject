@@ -44,28 +44,28 @@ class Main:
         hsv_img = mer_img
         rgb_img2 = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
         rgb_img3 = rgb_img2
-        invGamma = 1.0 / ((8 + 1)/50)#self._tk_ga_scale.get() #6 for white line
-        new = np.zeros(256)
-        ori = np.zeros(256)
-        for i in range(256):
-            new[i] = ((i / 255.0) ** invGamma) * 255
-            ori[i] = i
-        try:
-            incr_ch_lut = self.create_LUT_8UC1(ori, new)
-            low = np.array([0,0,0], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
-        except:
-            #sys.exit('Window Closed - Exiting')
-            log.info('ex')
-        high = np.array([0,0,0], dtype="uint8")#[self._tk_hh_scale.get(), self._tk_sh_scale.get(), self._tk_vh_scale.get()]
+        #invGamma = 1.0 / ((8 + 1)/50)#self._tk_ga_scale.get() #6 for white line
+        #new = np.zeros(256)
+        #ori = np.zeros(256)
+        #for i in range(256):
+        #    new[i] = ((i / 255.0) ** invGamma) * 255
+        #    ori[i] = i
+        #try:
+        #    incr_ch_lut = self.create_LUT_8UC1(ori, new)
+        #    low = np.array([0,0,0], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
+        #except:
+        #    #sys.exit('Window Closed - Exiting')
+        #    log.info('ex')
+        #high = np.array([0,0,0], dtype="uint8")#[self._tk_hh_scale.get(), self._tk_sh_scale.get(), self._tk_vh_scale.get()]
 
-        rgb_img = cv2.LUT(raw_rgb, incr_ch_lut).astype(np.uint8)
-        rgb_img2 = cv2.LUT(rgb_img2, incr_ch_lut).astype(np.uint8)
+        #rgb_img = cv2.LUT(raw_rgb, incr_ch_lut).astype(np.uint8)
+        #rgb_img2 = cv2.LUT(rgb_img2, incr_ch_lut).astype(np.uint8)
 
-        thresh_img = cv2.inRange(rgb_img2, low, high)
+        #thresh_img = cv2.inRange(rgb_img2, low, high)
 
-        #cv2.imwrite('WhiteLineThresh.png', thresh_img)
-        thresh_img = (255 - thresh_img)
-        #cv2.imwrite('BlackLineThresh.png', thresh_img)
+        ##cv2.imwrite('WhiteLineThresh.png', thresh_img)
+        #thresh_img = (255 - thresh_img)
+        ##cv2.imwrite('BlackLineThresh.png', thresh_img)
 
 
         try:
@@ -86,8 +86,8 @@ class Main:
             #cv2.imwrite('ThresholdImageWithAccidentalDetections.png', thresh1)
 
             # Erode and dilate to remove accidental line detections
-            mask = cv2.erode(thresh1, None, iterations=8)
-            mask = cv2.dilate(mask, None, iterations=8)
+            mask = cv2.erode(thresh1, None, iterations=9)
+            mask = cv2.dilate(mask, None, iterations=9)
 
             #TODO(Bild): Zeile unten benutzten um ganzes Bild zu speichern
             #cv2.imwrite('ThresholdImageWithoutAccidentalDetections.png', mask)
@@ -128,20 +128,20 @@ class Main:
                 #windowPart = int(maxWindow/3)
 
                 if cx >= 190:
-                    log.info('turn right')
+                    #log.info('turn right')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(speed, speed - turnspeed)
+                    self._robot.drive_wheel_motors(speed, int(speed - turnspeed))
                 if cx < 208 and cx > 104:
-                    log.info('on track')
+                    #log.info('on track')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
                     self._robot.drive_wheel_motors(speed, speed)
                 if cx <= 120:
-                    log.info('turn left')
+                    #log.info('turn left')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(speed - turnspeed, speed)
+                    self._robot.drive_wheel_motors(int(speed - turnspeed), speed)
             else:
                 log.info('nothing to see here')
                 # Display the resulting frame
