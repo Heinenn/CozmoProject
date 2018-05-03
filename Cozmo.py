@@ -121,27 +121,37 @@ class Main:
                 #else:
                 #    speed = 40
                 #    turnspeed = 40
-                speed = 50
-                turnspeed = 50
+                speed = 30
+                turnspeed = 40
 
                 maxWindow = 312
                 #windowPart = int(maxWindow/3)
 
-                if cx >= 190:
-                    #log.info('turn right')
+                if cx >= 234:
+                    log.info('strong right')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(speed, int(speed - turnspeed))
-                if cx < 208 and cx > 104:
-                    #log.info('on track')
+                    self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed))
+                if cx >= 192:
+                    log.info('lite right')
+                    # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
+                    # self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
+                    self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed + 10))
+                if cx < 192 and cx > 120:
+                    log.info('on track')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
-                    self._robot.drive_wheel_motors(speed, speed)
+                    self._robot.drive_wheel_motors(int(speed+20), int(speed+20))
                 if cx <= 120:
-                    #log.info('turn left')
+                    log.info('lite left')
+                    # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
+                    # self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
+                    self._robot.drive_wheel_motors(int(speed - turnspeed + 10), int(speed))
+                if cx <= 78:
+                    log.info('strong left')
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed - turnspeed), speed)
+                    self._robot.drive_wheel_motors(int(speed - turnspeed), int(speed))
             else:
                 log.info('nothing to see here')
                 # Display the resulting frame
@@ -188,6 +198,9 @@ class Main:
     def create_LUT_8UC1(self, x, y):
         spl = UnivariateSpline(x, y)
         return spl(range(256))
+
+    async def watchdog(self)::
+        
 
     async def set_up_cozmo(self, coz_conn):
         # TODO: setzt die Parameter für Cozmo (Funktioniert, kann aber nützlich zum nachschauen von Sachen für das "Kopf hoch"-Problem sein, deshalb TODO)
