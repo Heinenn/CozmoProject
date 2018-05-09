@@ -14,8 +14,10 @@ from cozmo.util import degrees, distance_mm, speed_mmps
 # Logger
 log = logging.getLogger('ok.FollowLine')
 
-# variables
-pathTimeout = 3;
+# global variables
+pathTimeout = 1;  # seconds to trigger watchdog
+deadEndTurns = 0;  # dead-end turns
+deadEndTurnsLimit = 3;  # dead-end turns before exit
 
 # klassen
 class Watchdog:
@@ -38,14 +40,9 @@ class Watchdog:
         raise self
 
 
-    # variables
-    pathTimeout = 1;
 
 
 class Main:
-    # variables
-
-
     def __init__(self):
         # Set-up logging
         formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s %(message)s')
@@ -54,6 +51,7 @@ class Main:
         handler.setFormatter(formatter)
         log.setLevel(logging.INFO)
         log.addHandler(handler)
+        # variables
         self.endProgramm = False;
         self._robot = None
         self._tk_root = 0
@@ -157,7 +155,11 @@ class Main:
             else:
                 log.info('nothing to see here')
                 if self.endProgramm:
-                    sys.exit("killed by watchdog")
+                 #   if int(deadEndTurns) >= int(deadEndTurnsLimit):
+                 #       sys.exit("killed by watchdog")
+                 #   else:
+                 #       deadEndTurns = int(deadEndTurns+1)
+                 #       self._robot.drive_wheel_motors(50, -50);     #TODO: 180 degree turn
 
 
             #millis = int(round(time.time() * 1000))
