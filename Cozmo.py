@@ -131,7 +131,7 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed))
-                if cx >= 192:# and cx < 234:
+                if cx >= 192 and cx < 234:
                     log.info('lite right')
                     # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     # self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
@@ -141,7 +141,7 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed+20), int(speed+20))
-                if cx <= 120:# and cx > 78:
+                if cx <= 120 and cx > 78:
                     log.info('lite left')
                     # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     # self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
