@@ -3,20 +3,49 @@ import cv2
 import numpy as np
 import logging
 import asyncio
-import time
-
+import sys
 import PIL.ImageTk
 import tkinter as tk
 
+from threading import Timer
 from scipy.interpolate import UnivariateSpline
-
 from cozmo.util import degrees, distance_mm, speed_mmps
 
 # Logger
 log = logging.getLogger('ok.FollowLine')
 
+# variables
+pathTimeout = 3;
+
+# klassen
+class Watchdog:
+    def __init__(self, timeout, userHandler=None):  # timeout in seconds
+        self.timeout = timeout
+        self.handler = userHandler if userHandler is not None else self.defaultHandler
+        self.timer = Timer(self.timeout, self.handler)
+        self.timer.start()
+
+    def reset(self):
+        self.timer.cancel()
+        self.timer = Timer(self.timeout, self.handler)
+        self.timer.start()
+        log.info('reseted watchdog timer')
+
+    def stop(self):
+        self.timer.cancel()
+
+    def defaultHandler(self):
+        raise self
+
+
+    # variables
+    pathTimeout = 1;
+
 
 class Main:
+    # variables
+
+
     def __init__(self):
         # Set-up logging
         formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s %(message)s')
@@ -25,7 +54,7 @@ class Main:
         handler.setFormatter(formatter)
         log.setLevel(logging.INFO)
         log.addHandler(handler)
-
+        self.endProgramm = False;
         self._robot = None
         self._tk_root = 0
         self._tk_label_input = 0
@@ -33,6 +62,10 @@ class Main:
         cozmo.connect(self.run)
 
         self._robot.add_event_handler(cozmo.world.EvtNewCameraImage, self.on_img)
+
+    def myHandler(self):
+        print("watchdog timer expired")
+        self.endProgramm = True;
 
     def on_img(self, event, *, image: cozmo.world.CameraImage, **kw):
         raw_img = image.raw_image
@@ -44,29 +77,9 @@ class Main:
         hsv_img = mer_img
         rgb_img2 = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
         rgb_img3 = rgb_img2
-        #invGamma = 1.0 / ((8 + 1)/50)#self._tk_ga_scale.get() #6 for white line
-        #new = np.zeros(256)
-        #ori = np.zeros(256)
-        #for i in range(256):
-        #    new[i] = ((i / 255.0) ** invGamma) * 255
-        #    ori[i] = i
-        #try:
-        #    incr_ch_lut = self.create_LUT_8UC1(ori, new)
-        #    low = np.array([0,0,0], dtype="uint8")#[self._tk_hl_scale.get(),self._tk_sl_scale.get(),self._tk_vl_scale.get()]
-        #except:
-        #    #sys.exit('Window Closed - Exiting')
-        #    log.info('ex')
-        #high = np.array([0,0,0], dtype="uint8")#[self._tk_hh_scale.get(), self._tk_sh_scale.get(), self._tk_vh_scale.get()]
 
-        #rgb_img = cv2.LUT(raw_rgb, incr_ch_lut).astype(np.uint8)
-        #rgb_img2 = cv2.LUT(rgb_img2, incr_ch_lut).astype(np.uint8)
-
-        #thresh_img = cv2.inRange(rgb_img2, low, high)
-
-        ##cv2.imwrite('WhiteLineThresh.png', thresh_img)
-        #thresh_img = (255 - thresh_img)
-        ##cv2.imwrite('BlackLineThresh.png', thresh_img)
-
+        # watchdog timer object
+        watchdog = Watchdog(pathTimeout, self.myHandler())
 
         try:
             #while True:
@@ -107,20 +120,6 @@ class Main:
                 cv2.line(crop_img, (0, cy), (1280, cy), (255, 0, 0), 1)
                 cv2.drawContours(crop_img, contours, -1, (0, 255, 0), 1)
 
-                #MaxWindow:312log.info('MaximumWindow: ' + str(c))
-                #log.info('Position' + str(cx))
-                #log.info('Cx: ' + str(cx))
-                #log.info('Cy: ' + str(cy))
-                #log.info('M10: ' + str(round(int(M['m10']))))
-                #log.info('M01: ' + str(round(int(M['m01']))))
-                #log.info('M00: ' + str(round(int(M['m00']))))
-
-                #if round(int(M['m10'])) > 1000000:
-                #    speed = 10
-                #    turnspeed = 10
-                #else:
-                #    speed = 40
-                #    turnspeed = 40
                 speed = 30
                 turnspeed = 40
 
@@ -132,7 +131,7 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed))
-                if cx >= 192:
+                if cx >= 192:# and cx < 234:
                     log.info('lite right')
                     # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     # self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
@@ -142,7 +141,7 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed+20), int(speed+20))
-                if cx <= 120:
+                if cx <= 120:# and cx > 78:
                     log.info('lite left')
                     # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     # self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
@@ -152,9 +151,14 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed - turnspeed), int(speed))
+                #reset watchdog timer)
+                watchdog.reset()
+                self.endProgramm = False;
             else:
                 log.info('nothing to see here')
-                # Display the resulting frame
+                if self.endProgramm:
+                    sys.exit("killed by watchdog")
+
 
             #millis = int(round(time.time() * 1000))
             #cv2.imwrite(str(millis) + '.png', crop_img)
@@ -199,8 +203,7 @@ class Main:
         spl = UnivariateSpline(x, y)
         return spl(range(256))
 
-    async def watchdog(self)::
-        
+
 
     async def set_up_cozmo(self, coz_conn):
         # TODO: setzt die Parameter für Cozmo (Funktioniert, kann aber nützlich zum nachschauen von Sachen für das "Kopf hoch"-Problem sein, deshalb TODO)
@@ -223,6 +226,7 @@ class Main:
 
         while True:
             await asyncio.sleep(0)
+
 
 
 
