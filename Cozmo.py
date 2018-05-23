@@ -129,9 +129,19 @@ class Main:
                 cv2.line(crop_img, (0, cy), (1280, cy), (255, 0, 0), 1)
                 cv2.drawContours(crop_img, contours, -1, (0, 255, 0), 1)
 
-                maxWindow = 312             #maximalwert von cx
-                mid = 156                   #wenn linie genau mittig, dann cx=mid
-                speedFactor = 5             #speed in mm/s = mit/speedfactor
+                maxWindow = 312                     #maximalwert von cx
+                mid = 156                           #wenn linie genau mittig, dann cx=mid
+                speedFactor = 5                     #speed in mm/s = mit/speedfactor -> kleinerer faktor, hoeherer speed
+                                                    # 3=gut 4=mit kurvenspeed anpassung moeglich 5=zu schnell
+                slowDownFactor = mid-cx             #starke abweichung -> starke kurve -> langsamer fahren
+                                                    # mid-cx gibt wert von -156 bis + 156
+                #TODO: slowDownFactor gedoens
+                #TODO: nice-to-have exponentielle radgeschwindigkeiten bei kurven, nicht linear
+                #if slowDownFactor < 0:
+                #    slowDownFactor=int(slowDownFactor*(-1))
+                #slowDownFactor = int(slowDownFactor/15)
+                #log.info('SLOWDOWN'+str(slowDownFactor))
+
                 speed = int(mid / speedFactor)
                 speed_l = ((cx-mid)/speedFactor)+int(speed)
                 speed_r = ((mid-cx)/speedFactor)+int(speed)
@@ -146,9 +156,16 @@ class Main:
                 #watchdog.reset()
                 #self.endProgramm = False;
             else:
-                log.info('nothing to see here, continuing last direction')
+                log.info('nothing to see here, continuing last known bending')
                 log.info('last speed l: ' + str(lastSpeedL) + ' | last speed r: ' + str(lastSpeedR))
-                self._robot.drive_wheel_motors(int(lastSpeedL), int(lastSpeedR))
+                #verringere kurvenradius durch proportionales abbremsen des inneren rades
+                #if lastSpeedR > lastSpeedL:
+                #    diff = int(lastSpeedR)-int(lastSpeedL)
+                #    self._robot.drive_wheel_motors(int(int(lastSpeedL)-diff), int(lastSpeedR))
+                #if lastSpeedR < lastSpeedL:
+                #    diff = int(lastSpeedL)-int(lastSpeedR)
+                #    self._robot.drive_wheel_motors(int(lastSpeedL), int(int(lastSpeedR)-diff))
+
                 billigCounter = int(billigCounter)+1
                 if billigCounter >= billigTimeout:
                     sys.exit(0)
