@@ -15,10 +15,14 @@ from cozmo.util import degrees, distance_mm, speed_mmps
 # Logger
 log = logging.getLogger('ok.FollowLine')
 
-# global variables
-pathTimeout = 3;  # seconds to trigger watchdog
-billigCounter = 0;  #count "nothing to see here" before kill
-billigTimeout = 50;  #stop after x "nothing to see here"
+# global variables          #sorry fuer den murks...
+lastSpeedR = 0              #last wheelspeed before track loss r
+lastSpeedL = 0              #last wheelspeed before track loss l
+billigCounter = 0           #watchdog counter
+billigTimeout = 50          #watchdog timout (counter-watchdog)
+pathTimeout = 3;            #watchdog timeout (timer-watchdog)
+
+
 
 
 # klassen
@@ -82,6 +86,11 @@ class Main:
         #watchdog = Watchdog(pathTimeout, self.myHandler())
 
         try:
+            #used global variables (write access needed)
+            global billigCounter
+            global lastSpeedR
+            global lastSpeedL
+
             #while True:
             # Crop the image
             Slices = 10
@@ -108,7 +117,6 @@ class Main:
             #contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
             _, contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
 
-            global billigCounter;
             # Find the biggest contour (if detected)
             if len(contours) > 0:
                 c = max(contours, key=cv2.contourArea)
@@ -121,48 +129,29 @@ class Main:
                 cv2.line(crop_img, (0, cy), (1280, cy), (255, 0, 0), 1)
                 cv2.drawContours(crop_img, contours, -1, (0, 255, 0), 1)
 
-                speed = 30
-                turnspeed = 40
+                maxWindow = 312             #maximalwert von cx
+                mid = 156                   #wenn linie genau mittig, dann cx=mid
+                speedFactor = 5             #speed in mm/s = mit/speedfactor
+                speed = int(mid / speedFactor)
+                speed_l = ((cx-mid)/speedFactor)+int(speed)
+                speed_r = ((mid-cx)/speedFactor)+int(speed)
+                lastSpeedL=speed_l
+                lastSpeedR=speed_r
+                log.info('cx: ' + str(cx) + ' | speed l: ' + str(speed_l) + ' | speed r: ' + str(speed_r))
 
-                maxWindow = 312
+                self._robot.drive_wheel_motors(int(speed_l), int(speed_r))
 
-                if cx >= 234:
-                    log.info('strong right')
-                    #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
-                    #self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed))
-                if cx >= 192 and cx < 234:
-                    log.info('lite right')
-                    # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
-                    # self._robot.turn_in_place(degrees(int(-5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed), int(speed - turnspeed + 10))
-                if cx < 192 and cx > 120:
-                    log.info('on track')
-                    #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
-                    #self._robot.drive_straight(distance_mm(10), speed_mmps(200)).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed+20), int(speed+20))
-                if cx <= 120 and cx > 78:
-                    log.info('lite left')
-                    # TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
-                    # self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed - turnspeed + 10), int(speed))
-                if cx <= 78:
-                    log.info('strong left')
-                    #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
-                    #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
-                    self._robot.drive_wheel_motors(int(speed - turnspeed), int(speed))
                 billigCounter = 0
                 #reset watchdog timer)
                 #watchdog.reset()
                 #self.endProgramm = False;
             else:
-               # global billigCounter;
-                log.info('nothing to see here')
+                log.info('nothing to see here, continuing last direction')
+                log.info('last speed l: ' + str(lastSpeedL) + ' | last speed r: ' + str(lastSpeedR))
+                self._robot.drive_wheel_motors(int(lastSpeedL), int(lastSpeedR))
                 billigCounter = int(billigCounter)+1
                 if billigCounter >= billigTimeout:
                     sys.exit(0)
-
-
 
             #millis = int(round(time.time() * 1000))
             #cv2.imwrite(str(millis) + '.png', crop_img)
