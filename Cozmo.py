@@ -7,6 +7,7 @@ import sys
 import PIL.ImageTk
 import tkinter as tk
 
+
 from threading import Timer
 from scipy.interpolate import UnivariateSpline
 from cozmo.util import degrees, distance_mm, speed_mmps
@@ -15,9 +16,10 @@ from cozmo.util import degrees, distance_mm, speed_mmps
 log = logging.getLogger('ok.FollowLine')
 
 # global variables
-pathTimeout = 1;  # seconds to trigger watchdog
-deadEndTurns = 0;  # dead-end turns
-deadEndTurnsLimit = 3;  # dead-end turns before exit
+pathTimeout = 3;  # seconds to trigger watchdog
+billigCounter = 0;  #count "nothing to see here" before kill
+billigTimeout = 50;  #stop after x "nothing to see here"
+
 
 # klassen
 class Watchdog:
@@ -63,7 +65,7 @@ class Main:
 
     def myHandler(self):
         print("watchdog timer expired")
-        self.endProgramm = True;
+        #self.endProgramm = True;
 
     def on_img(self, event, *, image: cozmo.world.CameraImage, **kw):
         raw_img = image.raw_image
@@ -77,7 +79,7 @@ class Main:
         rgb_img3 = rgb_img2
 
         # watchdog timer object
-        watchdog = Watchdog(pathTimeout, self.myHandler())
+        #watchdog = Watchdog(pathTimeout, self.myHandler())
 
         try:
             #while True:
@@ -106,6 +108,7 @@ class Main:
             #contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
             _, contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
 
+            global billigCounter;
             # Find the biggest contour (if detected)
             if len(contours) > 0:
                 c = max(contours, key=cv2.contourArea)
@@ -122,7 +125,6 @@ class Main:
                 turnspeed = 40
 
                 maxWindow = 312
-                #windowPart = int(maxWindow/3)
 
                 if cx >= 234:
                     log.info('strong right')
@@ -149,17 +151,17 @@ class Main:
                     #TODO: wenn die zeile weiter unten aktiviert ist, dann macht er das zwar, der Kopf geht aber nach oben => FIXEN
                     #self._robot.turn_in_place(degrees(int(5))).wait_for_completed()
                     self._robot.drive_wheel_motors(int(speed - turnspeed), int(speed))
+                billigCounter = 0
                 #reset watchdog timer)
-                watchdog.reset()
-                self.endProgramm = False;
+                #watchdog.reset()
+                #self.endProgramm = False;
             else:
+               # global billigCounter;
                 log.info('nothing to see here')
-                if self.endProgramm:
-                 #   if int(deadEndTurns) >= int(deadEndTurnsLimit):
-                 #       sys.exit("killed by watchdog")
-                 #   else:
-                 #       deadEndTurns = int(deadEndTurns+1)
-                 #       self._robot.drive_wheel_motors(50, -50);     #TODO: 180 degree turn
+                billigCounter = int(billigCounter)+1
+                if billigCounter >= billigTimeout:
+                    sys.exit(0)
+
 
 
             #millis = int(round(time.time() * 1000))
