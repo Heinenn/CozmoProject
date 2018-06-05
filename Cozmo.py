@@ -19,7 +19,7 @@ log = logging.getLogger('ok.FollowLine')
 lastSpeedR = 0              #last wheelspeed before track loss r
 lastSpeedL = 0              #last wheelspeed before track loss l
 billigCounter = 0           #watchdog counter
-billigTimeout = 50          #watchdog timout (counter-watchdog)
+billigTimeout = 30          #watchdog timout (counter-watchdog)
 pathTimeout = 3;            #watchdog timeout (timer-watchdog)
 
 
@@ -131,8 +131,10 @@ class Main:
 
                 maxWindow = 312                     #maximalwert von cx
                 mid = 156                           #wenn linie genau mittig, dann cx=mid
-                speedFactor = 5                     #speed in mm/s = mit/speedfactor -> kleinerer faktor, hoeherer speed
-                                                    # 3=gut 4=mit kurvenspeed anpassung moeglich 5=zu schnell
+                sqr = (cx-156)*(cx-165)
+                #speedFactor = 0.005*sqr + 2
+                speedFactor = 4.8                    #speed in mm/s = mit/speedfactor -> kleinerer faktor, hoeherer speed
+                                                    # 5=gut 4=mit kurvenspeed anpassung moeglich 3=zu schnell
                 slowDownFactor = mid-cx             #starke abweichung -> starke kurve -> langsamer fahren
                                                     # mid-cx gibt wert von -156 bis + 156
                 #TODO: slowDownFactor gedoens
@@ -142,9 +144,16 @@ class Main:
                 #slowDownFactor = int(slowDownFactor/15)
                 #log.info('SLOWDOWN'+str(slowDownFactor))
 
+                #sqrtestformel = int(((0-0.00005)*((cx-156)*(cx-156))+1)*1000)
+                #if int(sqrtestformel) < 0:
+                #    sqrtestformel = 0
+                #log.info('1Formel: ' + str(sqrtestformel))
+
                 speed = int(mid / speedFactor)
                 speed_l = ((cx-mid)/speedFactor)+int(speed)
                 speed_r = ((mid-cx)/speedFactor)+int(speed)
+
+
                 lastSpeedL=speed_l
                 lastSpeedR=speed_r
                 log.info('cx: ' + str(cx) + ' | speed l: ' + str(speed_l) + ' | speed r: ' + str(speed_r))
