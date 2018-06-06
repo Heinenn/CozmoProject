@@ -20,7 +20,6 @@ lastSpeedR = 0              #last wheelspeed before track loss r
 lastSpeedL = 0              #last wheelspeed before track loss l
 billigCounter = 0           #watchdog counter
 billigTimeout = 30          #watchdog timout (counter-watchdog)
-pathTimeout = 3;            #watchdog timeout (timer-watchdog)
 
 
 
@@ -111,10 +110,6 @@ class Main:
             mask = cv2.erode(thresh1, None, iterations=9)
             mask = cv2.dilate(mask, None, iterations=9)
 
-            #TODO(Bild): Zeile unten benutzten um ganzes Bild zu speichern
-            #cv2.imwrite('ThresholdImageWithoutAccidentalDetections.png', mask)
-            # Find the contours of the frame
-            #contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
             _, contours, hierarchy = cv2.findContours(mask.copy(), 1, cv2.CHAIN_APPROX_NONE)
 
             # Find the biggest contour (if detected)
@@ -131,28 +126,21 @@ class Main:
 
                 maxWindow = 312                     #maximalwert von cx
                 mid = 156                           #wenn linie genau mittig, dann cx=mid
-                sqr = (cx-156)*(cx-165)
+                #sqr = (cx-156)*(cx-165)
                 #speedFactor = 0.005*sqr + 2
-                speedFactor = 4.8                    #speed in mm/s = mit/speedfactor -> kleinerer faktor, hoeherer speed
+                speedFactor = 4.8                   #speed in mm/s = mid/speedfactor -> kleinerer faktor, hoeherer speed
                                                     # 5=gut 4=mit kurvenspeed anpassung moeglich 3=zu schnell
-                slowDownFactor = mid-cx             #starke abweichung -> starke kurve -> langsamer fahren
-                                                    # mid-cx gibt wert von -156 bis + 156
-                #TODO: slowDownFactor gedoens
-                #TODO: nice-to-have exponentielle radgeschwindigkeiten bei kurven, nicht linear
-                #if slowDownFactor < 0:
-                #    slowDownFactor=int(slowDownFactor*(-1))
-                #slowDownFactor = int(slowDownFactor/15)
-                #log.info('SLOWDOWN'+str(slowDownFactor))
 
+                #TODO: nice-to-have exponentielle radgeschwindigkeiten bei kurven, nicht linear
                 #sqrtestformel = int(((0-0.00005)*((cx-156)*(cx-156))+1)*1000)
                 #if int(sqrtestformel) < 0:
                 #    sqrtestformel = 0
                 #log.info('1Formel: ' + str(sqrtestformel))
 
+                #drive. linear wheelspeed, depending on cx value
                 speed = int(mid / speedFactor)
                 speed_l = ((cx-mid)/speedFactor)+int(speed)
                 speed_r = ((mid-cx)/speedFactor)+int(speed)
-
 
                 lastSpeedL=speed_l
                 lastSpeedR=speed_r
@@ -161,9 +149,7 @@ class Main:
                 self._robot.drive_wheel_motors(int(speed_l), int(speed_r))
 
                 billigCounter = 0
-                #reset watchdog timer)
-                #watchdog.reset()
-                #self.endProgramm = False;
+
             else:
                 log.info('nothing to see here, continuing last known bending')
                 log.info('last speed l: ' + str(lastSpeedL) + ' | last speed r: ' + str(lastSpeedR))
@@ -200,12 +186,8 @@ class Main:
             part = sl * i
             crop_img = inputImage[part:part + sl, 0:width]
             images[i] = crop_img
-        #TODO: die Zeile weiter unten bestimmt mit den zwei zahlen wie groß, und wie nach der Bereich der Kamera ist
-        #TODO: 1 ist Minimum, da 0 quasi nur seine Beine sind; es geht maximal bis 9
+
         ImagePart = self.ConnectImages(images, 1, 5)
-        # TODO: Zeile unten benutzten um Bild mit dem Bildausschnitt zu speichern, den er verwendet zum pfad suchen
-        # nach "TODO(Bild)" filtern um ganzes Bild zu speichern [sollte momentan Zeile 98 sein]
-        #cv2. imwrite('ImagePart.png', ImagePart)
         return ImagePart
 
     def ConnectImages(self, images, start, end):
@@ -245,8 +227,6 @@ class Main:
 
         while True:
             await asyncio.sleep(0)
-
-
 
 
 if __name__ == '__main__':
